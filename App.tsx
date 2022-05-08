@@ -10,7 +10,7 @@
 
 import React, {useEffect} from 'react';
 import {
-  SafeAreaView,
+  View,
   StatusBar,
   StyleSheet,
   useColorScheme,
@@ -25,17 +25,15 @@ const App = () => {
     SplashScreen.hide();
   }, []);
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Navigation />
-    </SafeAreaView>
+   <>
+   <Navigation />
+   </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
   },
 });
 
