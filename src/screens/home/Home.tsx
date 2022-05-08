@@ -1,13 +1,22 @@
 import {Plus} from 'assets';
+import {AppModal} from 'components';
+import ExpenseForm from 'components/expenseForm/ExpenseForm';
 import ExpenseList from 'components/expenseList/ExpenseList';
 import React, {FC} from 'react';
-import {View, Text, TouchableWithoutFeedback} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {IExpense} from 'sharables/interface/Expense';
 import {
   backgroundColor,
   primaryBlueColor,
   primaryDarkColor,
+  primaryWhite,
 } from 'styles/colors';
 import {
   baseFontSize,
@@ -58,9 +67,29 @@ export const expenses: IExpense[] = [
   },
 ];
 const Home: FC = () => {
+  const [showExpenseForm, setShowExpenseForm] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState('');
+  const [expense, setExpense] = React.useState<IExpense | undefined>(undefined);
   const handleViewAllRecent = () => {};
-  const handleAddExpense = () => {};
+  const handleAddExpense = () => {
+    setExpense(undefined);
+    toggleExpenseForm()
+  };
 
+  const toggleExpenseForm = () => {
+    setShowExpenseForm(!showExpenseForm);
+  };
+
+  const handleAddExpensePress = () => {
+    toggleExpenseForm();
+  };
+  const dissMissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+  const handleExpressView = (expense: IExpense) => {
+    setExpense(expense);
+    toggleExpenseForm();
+  }
   return (
     <>
       <View style={styles.container}>
@@ -76,17 +105,37 @@ const Home: FC = () => {
               <Text style={styles.sectionTitleBlue}>View All</Text>
             </TouchableWithoutFeedback>
           </View>
-          <ExpenseList expenses={expenses} />
-        <View style={styles.plusBtnWrapper}>
-        <TouchableWithoutFeedback onPress={handleAddExpense} >
-            <View style={styles.plusBtn}>
-              <Plus height={30} width={30} />
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-        
+          <ExpenseList expenses={expenses} pressHandler={handleExpressView} />
+          <View style={styles.plusBtnWrapper}>
+            <TouchableWithoutFeedback onPress={handleAddExpense}>
+              <View style={styles.plusBtn}>
+                <Plus height={30} width={30} />
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
         </View>
       </View>
+      {showExpenseForm && (
+        <AppModal visible={showExpenseForm} closeModal={toggleExpenseForm}>
+          <TouchableWithoutFeedback onPress={dissMissKeyboard}>
+            <View style={styles.modalContainer}>
+              <TouchableWithoutFeedback onPress={toggleExpenseForm}>
+                <View style={styles.closeModal}>
+                  <Text style={styles.closeModalText}>Close</Text>
+                </View>
+              </TouchableWithoutFeedback>
+              <ScrollView>
+                <Text style={styles.addExpenseText}>{!expense ? "Add" : "Update"} Expense</Text>
+                <ExpenseForm
+                  submitHandler={handleAddExpensePress}
+                  errorMessage={errorMessage}
+                  expense={expense}
+                />
+              </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
+        </AppModal>
+      )}
     </>
   );
 };
@@ -149,6 +198,28 @@ const styles = ScaledSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: getResponsiveSize(basePaddingXl + 5, 'ms'),
+  },
+  modalContainer: {
+    backgroundColor: primaryBlueColor,
+    //height: '60%',
+    width: '100%',
+    padding: '20@ms',
+    marginBottom: '120@ms',
+  },
+
+  closeModal: {
+    alignSelf: 'flex-end',
+  },
+  closeModalText: {
+    color: primaryWhite,
+    fontSize: '12@ms',
+    marginBottom: '10@ms',
+  },
+  addExpenseText: {
+    color: primaryWhite,
+    fontSize: getResponsiveSize(baseFontSizeXl + 5, 'ms'),
+    fontWeight: '600',
+    marginBottom: getResponsiveSize(baseMargin, 'ms'),
   },
 });
 export default Home;
