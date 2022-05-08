@@ -1,4 +1,4 @@
-import {Expense} from 'components';
+import Expense from '../expense/Expense';
 import React from 'react';
 import {ActivityIndicator, FlatList, View, Text} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';

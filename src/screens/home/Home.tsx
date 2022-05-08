@@ -1,7 +1,9 @@
+import { useNavigation } from '@react-navigation/core';
 import {Plus} from 'assets';
 import {AppModal} from 'components';
 import ExpenseForm from 'components/expenseForm/ExpenseForm';
 import ExpenseList from 'components/expenseList/ExpenseList';
+import { EXPENSES_SCREEN } from 'navigations/constants';
 import React, {FC} from 'react';
 import {
   View,
@@ -70,7 +72,10 @@ const Home: FC = () => {
   const [showExpenseForm, setShowExpenseForm] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [expense, setExpense] = React.useState<IExpense | undefined>(undefined);
-  const handleViewAllRecent = () => {};
+  const navigation = useNavigation();
+  const handleViewAllRecent = () => {
+    navigation.navigate(EXPENSES_SCREEN);
+  };
   const handleAddExpense = () => {
     setExpense(undefined);
     toggleExpenseForm()
