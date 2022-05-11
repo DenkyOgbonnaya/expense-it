@@ -1,13 +1,29 @@
+import {useNavigation} from '@react-navigation/core';
 import {Filter} from 'assets';
-import {Expense} from 'components';
+import {AppModal, Expense} from 'components';
+import {CATEGORIES_SCREEN} from 'navigations/constants';
 import React, {FC} from 'react';
 import {ScrollView, Text, TouchableWithoutFeedback, View} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {IExpense} from 'sharables/interface/Expense';
-import {backgroundColor, primaryDarkColor, primaryGray} from 'styles/colors';
-import {baseFontSize, baseMarginLg, basePaddingLg} from 'styles/spacing';
+import {
+  backgroundColor,
+  primaryBlueColor,
+  primaryDarkColor,
+  primaryGray,
+  primaryWhite,
+} from 'styles/colors';
+import {
+  baseBorderRadius,
+  baseFontSize,
+  baseMargin,
+  baseMarginLg,
+  baseMarginSm,
+  basePaddingLg,
+} from 'styles/spacing';
 import {formatCurrency} from 'utills/helper';
 import {getResponsiveSize} from 'utills/responsiveSize';
+import ExpenseFilters from './components/expenseFilters/ExpenseFilters';
 
 interface IExpenses {
   label: string;
@@ -15,6 +31,8 @@ interface IExpenses {
 }
 
 const Expenses: FC = () => {
+  const [showFilters, setShowFilters] = React.useState(false);
+  const navigation = useNavigation();
   const expensesList: IExpenses[] = [
     {
       label: '2020-01-01',
@@ -93,15 +111,31 @@ const Expenses: FC = () => {
       ],
     },
   ];
-
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+  const handleFilterPress = (filter: string) => {
+    toggleFilters();
+    switch (filter) {
+      case 'Category':
+        //@ts-ignore
+        navigation.navigate(CATEGORIES_SCREEN);
+        break;
+      default:
+        return;
+    }
+  };
   return (
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.titleText}>TOTAL MONEY SPENT SO FAR</Text>
         <Text style={styles.amountText}>N {formatCurrency(100000)}</Text>
         <View style={styles.filter}>
-          <TouchableWithoutFeedback>
-            <Filter height={35} width={35} />
+          <TouchableWithoutFeedback onPress={toggleFilters}>
+            <View style={styles.filterButton}>
+              <Filter height={20} width={20} />
+              <Text style={styles.filterButtonText}>Filter</Text>
+            </View>
           </TouchableWithoutFeedback>
         </View>
         <View style={styles.expensesList}>
@@ -119,6 +153,23 @@ const Expenses: FC = () => {
           </>
         </View>
       </ScrollView>
+      {showFilters && (
+        <AppModal visible={showFilters} closeModal={toggleFilters}>
+          <View style={styles.modalContainer}>
+            <View style={styles.heading}>
+              <Text style={styles.expenseFilterText}>
+                Expenses filter options
+              </Text>
+              <TouchableWithoutFeedback onPress={toggleFilters}>
+                <View style={styles.closeModal}>
+                  <Text style={styles.closeModalText}>X</Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+            <ExpenseFilters handleFilter={handleFilterPress} />
+          </View>
+        </AppModal>
+      )}
     </View>
   );
 };
@@ -161,6 +212,42 @@ const styles = ScaledSheet.create({
   },
   expenseListContainer: {
     marginTop: getResponsiveSize(baseMarginLg, 'ms'),
+  },
+  modalContainer: {
+    backgroundColor: primaryWhite,
+    width: '100%',
+    padding: '20@ms',
+    borderTopRightRadius: getResponsiveSize(baseBorderRadius + 10, 'ms'),
+    borderTopLeftRadius: getResponsiveSize(baseBorderRadius + 10, 'ms'),
+    // marginBottom: '120@ms',
+  },
+
+  closeModal: {
+    alignSelf: 'flex-end',
+  },
+  closeModalText: {
+    color: primaryDarkColor,
+    fontSize: getResponsiveSize(baseFontSize + 5, 'ms'),
+  },
+  expenseFilterText: {
+    color: primaryDarkColor,
+    fontSize: getResponsiveSize(baseFontSize + 5, 'ms'),
+    fontWeight: '600',
+  },
+  heading: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: getResponsiveSize(baseMarginLg + 10, 'ms'),
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterButtonText: {
+    fontSize: getResponsiveSize(baseFontSize + 5, 'ms'),
+    marginLeft: getResponsiveSize(baseMarginSm, 'ms'),
+    color: primaryBlueColor,
   },
 });
 export default Expenses;

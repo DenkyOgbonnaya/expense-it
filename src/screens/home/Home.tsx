@@ -74,6 +74,7 @@ const Home: FC = () => {
   const [expense, setExpense] = React.useState<IExpense | undefined>(undefined);
   const navigation = useNavigation();
   const handleViewAllRecent = () => {
+    // @ts-ignore
     navigation.navigate(EXPENSES_SCREEN);
   };
   const handleAddExpense = () => {

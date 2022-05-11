@@ -1,10 +1,11 @@
 import React, {FC} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {EXPENSES_SCREEN, HOME_SCREEN} from './constants';
+import {CATEGORIES_SCREEN, EXPENSES_SCREEN, HOME_SCREEN} from './constants';
 import Home from '../screens/home/Home';
 import {backgroundColor, primaryBlueColor, primaryDarkColor, primaryWhite} from 'styles/colors';
 import Expenses from 'screens/expenses/Expenses';
+import CategoryExpense from 'screens/categorizedExpens/CategorizedExpense';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,19 @@ const Navigation: FC = () => {
           options={{
             headerShown: true,
             title: 'All Expenses',
+
+            headerStyle: {
+              backgroundColor: backgroundColor,
+            },
+            headerTintColor: primaryDarkColor
+          }}
+        />
+        <Stack.Screen
+          name={CATEGORIES_SCREEN}
+          component={CategoryExpense}
+          options={{
+            headerShown: true,
+            title: 'Expenses By Category',
 
             headerStyle: {
               backgroundColor: backgroundColor,
