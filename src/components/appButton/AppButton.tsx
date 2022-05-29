@@ -10,7 +10,7 @@ interface IProps {
   onPressHandler: () => void;
   customBtnStyle?: any;
   customBtnTextStyle?: any;
-  icon?: React.ComponentType;
+  icon?: React.ComponentType | null;
   disabled?: boolean;
 }
 

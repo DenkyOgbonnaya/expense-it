@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import AppModal from '../appModal/AppModal';
 import {
+  primaryBlue,
   primaryBlueColor,
   primaryDarkColor,
   primaryGray,
@@ -24,7 +25,7 @@ import {
   basePadding,
   basePaddingSm,
 } from 'styles/spacing';
-import {ChevronDown} from 'assets';
+import {ChevronDown, Plus, PlusBlue} from 'assets';
 
 interface selectFieldData {
   label: string;
@@ -40,6 +41,7 @@ interface IProps {
   customWrapperStyle?: any;
   data: selectFieldData[];
   editable?: boolean;
+  addFormToggler?: () => void;
 }
 const SelectField: FC<IProps> = ({
   label,
@@ -51,6 +53,7 @@ const SelectField: FC<IProps> = ({
   customWrapperStyle,
   data = [],
   editable = true,
+  addFormToggler,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [inputVaue, setInputValue] = useState(value || '');
@@ -70,10 +73,12 @@ const SelectField: FC<IProps> = ({
 
     toggleModal();
   };
+  const toggleAddForm = () => {
+    if (addFormToggler) addFormToggler();
+  };
   return (
     <View>
-      <TouchableWithoutFeedback onPress={toggleModal} >
-       
+      <TouchableWithoutFeedback onPress={toggleModal}>
         <View>
           <View style={[styles.wrapper, customWrapperStyle]}>
             {label ? (
@@ -141,6 +146,14 @@ const SelectField: FC<IProps> = ({
                     )}
                   />
                 )}
+                {addFormToggler ? (
+                  <TouchableOpacity onPress={toggleAddForm}>
+                    <View style={styles.addList}>
+                      <PlusBlue height={20} width={20} />
+                      <Text style={styles.addListText}>Add New</Text>
+                    </View>
+                  </TouchableOpacity>
+                ) : null}
               </View>
             </View>
           </AppModal>
@@ -169,8 +182,8 @@ const styles = ScaledSheet.create({
   list: {
     backgroundColor: primaryWhite,
     width: '100%',
-    borderTopLeftRadius: "10@ms",
-    borderTopRightRadius: "10@ms",
+    borderTopLeftRadius: '10@ms',
+    borderTopRightRadius: '10@ms',
     paddingBottom: '20@ms',
     minHeight: '100@ms',
   },
@@ -202,7 +215,7 @@ const styles = ScaledSheet.create({
     borderRadius: getResponsiveSize(baseBorderRadiusLg, 'ms'),
     height: '50@ms',
     paddingRight: getResponsiveSize(basePadding, 'ms'),
-    paddingLeft: getResponsiveSize(basePaddingSm-5, "ms")
+    paddingLeft: getResponsiveSize(basePaddingSm - 5, 'ms'),
   },
   textInput: {
     fontSize: '15@ms',
@@ -247,6 +260,17 @@ const styles = ScaledSheet.create({
     color: primaryWhite,
     fontSize: '14@ms',
     marginTop: '12@ms',
+    marginLeft: '8@ms',
+  },
+  addList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: getResponsiveSize(baseMarginLg, 'vs'),
+  },
+  addListText: {
+    color: primaryBlueColor,
+    fontSize: '14@ms',
     marginLeft: '8@ms',
   },
 });
