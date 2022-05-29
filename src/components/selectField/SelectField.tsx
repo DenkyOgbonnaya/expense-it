@@ -3,22 +3,28 @@ import {ScaledSheet} from 'react-native-size-matters';
 import {
   View,
   Text,
-  Modal,
   FlatList,
   TouchableOpacity,
-  TextInput,
   TouchableWithoutFeedback,
 } from 'react-native';
 import AppModal from '../appModal/AppModal';
 import {
+  primaryBlueColor,
   primaryDarkColor,
   primaryGray,
   primaryGrayLight,
   primaryWhite,
 } from 'styles/colors';
-import { getResponsiveSize } from 'utills/responsiveSize';
-import { baseFontSize, baseMargin, basePaddingSm } from 'styles/spacing';
-import { CalendarIcon, ChevronDown } from 'assets';
+import {getResponsiveSize} from 'utills/responsiveSize';
+import {
+  baseBorderRadiusLg,
+  baseFontSize,
+  baseMargin,
+  baseMarginLg,
+  basePadding,
+  basePaddingSm,
+} from 'styles/spacing';
+import {ChevronDown} from 'assets';
 
 interface selectFieldData {
   label: string;
@@ -50,7 +56,7 @@ const SelectField: FC<IProps> = ({
   const [inputVaue, setInputValue] = useState(value || '');
   useEffect(() => {
     let val = null;
-    val = data.find(option => option.value === value);
+    val = data.find(option => option.value == value);
     if (val) {
       setInputValue(val.label);
     }
@@ -65,88 +71,88 @@ const SelectField: FC<IProps> = ({
     toggleModal();
   };
   return (
-    <TouchableWithoutFeedback onPress={toggleModal} disabled={!editable}>
-      <>
-      <View style={[styles.wrapper, customWrapperStyle]}>
-        {label ? (
-          <View style={styles.labelContainer}>
-            {icon && icon}
-            <Text style={styles.label}>{label}</Text>
-          </View>
-        ) : null}
-        <View
-          style={[
-            styles.textInpuContainer,
-            !editable && {backgroundColor: primaryGrayLight},
-          ]}>
-        
-            < >
-              <Text
-                style={[
-                  styles.inputVaue,
-                  !editable && {color: primaryGrayLight},
-                ]}>
-               <Text style={styles.textGrey}>{inputVaue}</Text>
-              </Text>
-              {!inputVaue ? (
-                <Text style={styles.textGrey}>{placeholder}</Text>
-              ) : null}
-            </>
-          
+    <View>
+      <TouchableWithoutFeedback onPress={toggleModal} >
+       
+        <View>
+          <View style={[styles.wrapper, customWrapperStyle]}>
+            {label ? (
+              <View style={styles.labelContainer}>
+                {icon && icon}
+                <Text style={styles.label}>{label}</Text>
+              </View>
+            ) : null}
+            <View
+              style={[
+                styles.textInpuContainer,
+                !editable && {backgroundColor: primaryGrayLight},
+              ]}>
+              <>
+                <Text
+                  style={[
+                    styles.inputVaue,
+                    !editable && {color: primaryGrayLight},
+                  ]}>
+                  <Text style={styles.textGrey}>{inputVaue}</Text>
+                </Text>
+                {!inputVaue ? (
+                  <Text style={styles.textGrey}>{placeholder}</Text>
+                ) : null}
+              </>
 
-          <View style={styles.iconWrap}>
-            <ChevronDown />
+              <View style={styles.iconWrap}>
+                <ChevronDown />
+              </View>
+            </View>
           </View>
+
+          {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
         </View>
-
-        <>
-          {showModal && (
-            <AppModal visible={showModal} closeModal={toggleModal}>
-              <View style={styles.modal}>
-                <View>
-                  <Text style={styles.label}>{''}</Text>
-                  <View style={styles.closeWrap}>
-                    <TouchableOpacity onPress={toggleModal}>
-                      <Text style={{fontSize: 15, color: primaryWhite}}>x</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.list}>
-                  {!data.length ? (
-                    <View style={styles.noDataTextWrap}>
-                      <Text style={styles.noDataText}>No data</Text>
-                    </View>
-                  ) : (
-                    <FlatList
-                      keyExtractor={item => item.label}
-                      data={data}
-                      showsVerticalScrollIndicator={true}
-                      renderItem={({item}) => (
-                        <TouchableOpacity
-                          onPress={() => handleSelect(item)}
-                          style={styles.labelRow}>
-                          <Text style={styles.label}>{item.label}</Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  )}
+      </TouchableWithoutFeedback>
+      <>
+        {showModal && (
+          <AppModal visible={showModal} closeModal={toggleModal}>
+            <View style={styles.modal}>
+              <View>
+                <Text style={styles.label}>{''}</Text>
+                <View style={styles.closeWrap}>
+                  <TouchableOpacity onPress={toggleModal}>
+                    <Text style={{fontSize: 15, color: primaryWhite}}>x</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-            </AppModal>
-          )}
-        </>
-      </View>
 
-      {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
+              <View style={styles.list}>
+                {!data.length ? (
+                  <View style={styles.noDataTextWrap}>
+                    <Text style={styles.noDataText}>No data</Text>
+                  </View>
+                ) : (
+                  <FlatList
+                    keyExtractor={item => item.label}
+                    data={data}
+                    showsVerticalScrollIndicator={true}
+                    renderItem={({item}) => (
+                      <TouchableOpacity
+                        onPress={() => handleSelect(item)}
+                        style={styles.labelRow}>
+                        <Text style={styles.label}>{item.label}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                )}
+              </View>
+            </View>
+          </AppModal>
+        )}
       </>
-    </TouchableWithoutFeedback>
+    </View>
   );
 };
 
 const styles = ScaledSheet.create({
   wrapper: {
-    marginBottom: getResponsiveSize(baseMargin, 'ms'),
+    marginBottom: getResponsiveSize(baseMarginLg + 10, 'ms'),
     backgroundColor: primaryWhite,
     borderRadius: '5@ms',
     height: '55@vs',
@@ -157,32 +163,24 @@ const styles = ScaledSheet.create({
   modal: {
     width: '100%',
     justifyContent: 'center',
-    marginBottom: '10@ms',
     position: 'relative',
     maxHeight: '80%',
   },
   list: {
-    backgroundColor: primaryDarkColor,
-    // elevation: 3,
-
-    // position: 'absolute',
-    // zIndex: 3,
-    // //top: 74,
-    // left: 10,
+    backgroundColor: primaryWhite,
     width: '100%',
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5,
-    // paddingBottom: '20@ms',
+    borderTopLeftRadius: "10@ms",
+    borderTopRightRadius: "10@ms",
+    paddingBottom: '20@ms',
     minHeight: '100@ms',
   },
   iconWrap: {
     alignSelf: 'flex-end',
     position: 'relative',
-    top: -15,
+    top: -10,
   },
   closeWrap: {
     alignSelf: 'flex-end',
-    // backgroundColor: ,
     justifyContent: 'center',
     alignItems: 'center',
     width: 20,
@@ -197,20 +195,23 @@ const styles = ScaledSheet.create({
   },
 
   textInpuContainer: {
+    justifyContent: 'center',
     paddingVertical: 0,
-    // height: '45@ms',
+    borderWidth: getResponsiveSize(1, 'ms'),
+    borderColor: primaryBlueColor,
+    borderRadius: getResponsiveSize(baseBorderRadiusLg, 'ms'),
+    height: '50@ms',
+    paddingRight: getResponsiveSize(basePadding, 'ms'),
+    paddingLeft: getResponsiveSize(basePaddingSm-5, "ms")
   },
   textInput: {
     fontSize: '15@ms',
     color: primaryWhite,
-
-    height: '45@ms',
     paddingLeft: '8@ms',
   },
   labelRow: {
     flexDirection: 'row',
     marginTop: 15,
-    //borderBottomWidth: 0.3,
     borderColor: primaryGray,
     paddingHorizontal: 20,
   },
@@ -236,12 +237,11 @@ const styles = ScaledSheet.create({
     color: primaryGray,
     fontSize: getResponsiveSize(baseFontSize, 'ms'),
     fontWeight: '600',
-    marginTop: getResponsiveSize(-baseMargin, 'ms'),
+    // marginTop: getResponsiveSize(-baseMargin, 'ms'),
   },
- 
+
   inputVaue: {
     color: primaryGray,
-   
   },
   errorText: {
     color: primaryWhite,

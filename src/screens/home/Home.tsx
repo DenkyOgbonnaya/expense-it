@@ -18,9 +18,11 @@ import {
   backgroundColor,
   primaryBlueColor,
   primaryDarkColor,
+  primaryGrayLight,
   primaryWhite,
 } from 'styles/colors';
 import {
+  baseBorderRadiusLg,
   baseFontSize,
   baseFontSizeLg,
   baseFontSizeXl,
@@ -206,23 +208,23 @@ const styles = ScaledSheet.create({
     padding: getResponsiveSize(basePaddingXl + 5, 'ms'),
   },
   modalContainer: {
-    backgroundColor: primaryBlueColor,
-    //height: '60%',
+    backgroundColor: primaryWhite,
     width: '100%',
-    padding: '20@ms',
-    marginBottom: '120@ms',
+    padding: '10@ms',
+    borderTopRightRadius: getResponsiveSize(baseBorderRadiusLg+10, "ms"),
+    borderTopLeftRadius: getResponsiveSize(baseBorderRadiusLg+10, "ms")
   },
 
   closeModal: {
     alignSelf: 'flex-end',
   },
   closeModalText: {
-    color: primaryWhite,
+    color: primaryDarkColor,
     fontSize: '12@ms',
     marginBottom: '10@ms',
   },
   addExpenseText: {
-    color: primaryWhite,
+    color: primaryDarkColor,
     fontSize: getResponsiveSize(baseFontSizeXl + 5, 'ms'),
     fontWeight: '600',
     marginBottom: getResponsiveSize(baseMargin, 'ms'),

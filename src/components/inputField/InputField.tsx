@@ -7,9 +7,9 @@ import {
   KeyboardTypeOptions,
   ReturnKeyTypeOptions,
 } from 'react-native';
-import {primaryDarkColor, primaryGray, primaryWhite} from 'styles/colors';
+import {primaryBlueColor, primaryDarkColor, primaryGray, primaryWhite} from 'styles/colors';
 import { getResponsiveSize } from 'utills/responsiveSize';
-import { baseFontSize, baseMargin, basePaddingSm } from 'styles/spacing';
+import { baseBorderRadius, baseBorderRadiusLg, baseFontSize, baseMargin, baseMarginLg, basePaddingSm } from 'styles/spacing';
 
 const fontSize = '15@ms';
 interface IProps {
@@ -111,12 +111,13 @@ const InputField: FC<IProps> = ({
 const styles = ScaledSheet.create({
   wrapper: {
     overflow: 'visible',
-    marginBottom: getResponsiveSize(baseMargin, 'ms'),
+    marginBottom: getResponsiveSize(baseMarginLg+10, 'ms'),
     backgroundColor: primaryWhite,
     borderRadius: '5@ms',
     height: '55@vs',
     paddingHorizontal: getResponsiveSize(basePaddingSm, 'ms'),
     paddingVertical: 4,
+
   },
 
   labelContainer: {
@@ -126,13 +127,17 @@ const styles = ScaledSheet.create({
   textInpuContainer: {
     flexDirection: 'row',
     position: 'relative',
-    height: '40@vs',
+    height: '50@vs',
     width: '100%',
+    borderWidth: getResponsiveSize(1, "ms"),
+    borderColor: primaryBlueColor,
+    borderRadius: getResponsiveSize(baseBorderRadiusLg, "ms")
   },
   textInput: {
     fontSize,
     color: primaryGray,
     width: '100%',
+    fontWeight: '600'
   },
   label: {
     color: primaryDarkColor,

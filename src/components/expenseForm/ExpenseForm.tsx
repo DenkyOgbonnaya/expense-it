@@ -7,8 +7,9 @@ import {View} from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {IExpense, IExpenseErrors} from 'sharables/interface/Expense';
 import {getResponsiveSize} from 'utills/responsiveSize';
-import {baseMarginLg} from 'styles/spacing';
+import {baseMarginLg, basePaddingXl} from 'styles/spacing';
 import {PlusCircle} from 'assets';
+import { primaryBlueColor } from 'styles/colors';
 
 interface IProps {
   expense: IExpense | undefined;
@@ -99,6 +100,8 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
 const styles = ScaledSheet.create({
   addBtn: {
     marginVertical: getResponsiveSize(baseMarginLg, 'ms'),
+    backgroundColor: primaryBlueColor,
+    paddingVertical: getResponsiveSize(basePaddingXl+5, "vs")
   },
 });
 export default ExpenseForm;

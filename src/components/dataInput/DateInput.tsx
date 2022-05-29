@@ -11,8 +11,16 @@ import {
   primaryWhite,
   primaryGray,
 } from 'styles/colors';
-import { getResponsiveSize } from 'utills/responsiveSize';
-import { baseFontSize, baseMargin, basePadding, basePaddingLg, basePaddingSm } from 'styles/spacing';
+import {getResponsiveSize} from 'utills/responsiveSize';
+import {
+  baseBorderRadiusLg,
+  baseFontSize,
+  baseMargin,
+  baseMarginLg,
+  basePadding,
+  basePaddingLg,
+  basePaddingSm,
+} from 'styles/spacing';
 import {CalendarIcon} from 'assets';
 
 interface IProps {
@@ -28,12 +36,13 @@ const DateInput: FC<IProps> = ({
   selectHandler,
   label,
   placeHolder = 'DD/MM/YYYY',
+  date
 }) => {
   const [show, setShow] = useState(false);
-  const [date, setDate] = useState('');
+  const [theDate, setTheDate] = useState(date || "");
 
   const handleDayPress = (dateString: string) => {
-    setDate(dateString);
+    setTheDate(dateString);
     selectHandler(dateString);
     toggleCalender();
   };
@@ -66,14 +75,14 @@ const DateInput: FC<IProps> = ({
       <TouchableWithoutFeedback onPress={showDatepicker}>
         <View style={styles.rowView}>
           <View style={styles.wrapper}>
-            {date ? (
-              <Text style={styles.date}>{date}</Text>
+            {theDate ? (
+              <Text style={styles.date}>{theDate}</Text>
             ) : (
               <Text style={styles.placeHolder}> {placeHolder} </Text>
             )}
           </View>
           <View style={styles.iconWrap}>
-           <CalendarIcon />
+            <CalendarIcon />
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -85,11 +94,11 @@ const DateInput: FC<IProps> = ({
               onDayPress={dateData => handleDayPress(dateData.dateString)}
               style={styles.container}
               theme={{
-                backgroundColor: primaryBlueColor,
-                calendarBackground: primaryBlueColor,
+                backgroundColor: primaryWhite,
+                calendarBackground: primaryWhite,
                 selectedDayBackgroundColor: primaryWhite,
                 selectedDayTextColor: primaryWhite,
-                arrowColor: primaryDarkColor,
+                arrowColor: primaryBlueColor,
                 dayTextColor: primaryDarkColor,
               }}
               renderHeader={date => renderHeader(date)}
@@ -101,8 +110,8 @@ const DateInput: FC<IProps> = ({
   );
 };
 const styles = ScaledSheet.create({
-  containerWrapper : {
-    marginBottom: getResponsiveSize(baseMargin, 'ms'),
+  containerWrapper: {
+    marginBottom: getResponsiveSize(baseMarginLg + 10, 'ms'),
     backgroundColor: primaryWhite,
     borderRadius: '5@ms',
     height: '55@vs',
@@ -110,7 +119,7 @@ const styles = ScaledSheet.create({
     paddingVertical: 4,
   },
   container: {
-    backgroundColor: primaryBlueColor,
+    backgroundColor: primaryWhite,
   },
   calendar: {
     width: '100%',
@@ -118,8 +127,13 @@ const styles = ScaledSheet.create({
   rowView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-
+    alignItems: 'center',
+    height: '50@ms',
     overflow: 'visible',
+    borderWidth: getResponsiveSize(1, 'ms'),
+    borderColor: primaryBlueColor,
+    borderRadius: getResponsiveSize(baseBorderRadiusLg, 'ms'),
+    paddingRight: getResponsiveSize(basePadding, 'ms'),
   },
   calenderView: {
     position: 'absolute',
@@ -129,10 +143,9 @@ const styles = ScaledSheet.create({
   },
 
   wrapper: {
-    paddingHorizontal: getResponsiveSize(basePaddingSm-5, 'ms'),
+    paddingHorizontal: getResponsiveSize(basePaddingSm - 5, 'ms'),
     paddingVertical: getResponsiveSize(basePaddingSm, 'ms'),
     overflow: 'visible',
-  
   },
   iconWrap: {
     alignSelf: 'flex-end',
@@ -144,7 +157,7 @@ const styles = ScaledSheet.create({
     textAlign: 'center',
   },
   headerWrap: {
-    backgroundColor: primaryGrayLight,
+    backgroundColor: primaryBlueColor,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 8,
@@ -159,7 +172,7 @@ const styles = ScaledSheet.create({
     fontSize: '14@ms',
   },
   dateText: {
-    color: primaryBlueColor,
+    color: primaryWhite,
     fontSize: '15@ms',
   },
   errorText: {
