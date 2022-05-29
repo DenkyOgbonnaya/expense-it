@@ -4,3 +4,6 @@ export const primaryBlueColor = '#3EC3D4';
 export const primaryWhite = '#FFFFFF';
 export const primaryGray = '#808080';
 export const primaryGrayLight = '#E1E0E6';
+export const primaryRed = "red";
+export const primaryBlue = "blue";
+export const primaryGreen = "green"

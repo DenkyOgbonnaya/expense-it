@@ -5,6 +5,8 @@ import AppButton from './appButton/AppButton';
 import AppModal from './appModal/AppModal';
 import DateInput from './dataInput/DateInput';
 import SelectField from './selectField/SelectField';
+import Toast from './toast/Toast';
+
 
 export {
   Expense,
@@ -14,4 +16,5 @@ export {
   AppModal,
   DateInput,
   SelectField,
+  Toast
 };
