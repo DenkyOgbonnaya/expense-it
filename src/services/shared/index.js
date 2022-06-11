@@ -12,7 +12,7 @@ export const handleGetRequest = async payload => {
 
 export const handlePostRequest = async (path, payload) => {
   try {
-    const {data} = await API.post(`${path}`, payload);
+    const {data} = await API.post(path, payload);
     return data;
   } catch (err) {
     throw err;

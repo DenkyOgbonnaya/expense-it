@@ -1,16 +1,17 @@
-import { useNavigation } from '@react-navigation/core';
+import {useNavigation} from '@react-navigation/core';
 import {Plus} from 'assets';
 import {AppModal} from 'components';
 import ExpenseForm from 'components/expenseForm/ExpenseForm';
 import ExpenseList from 'components/expenseList/ExpenseList';
-import { EXPENSES_SCREEN } from 'navigations/constants';
-import React, {FC} from 'react';
+import {EXPENSES_SCREEN} from 'navigations/constants';
+import React, {FC, useState} from 'react';
 import {
   View,
   Text,
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {IExpense} from 'sharables/interface/Expense';
@@ -73,15 +74,22 @@ export const expenses: IExpense[] = [
 const Home: FC = () => {
   const [showExpenseForm, setShowExpenseForm] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
+  const [date, setDate] = useState({
+    startDate: "", endDate: ""
+  })
+
+  const [loading, setLoading] = useState(false);
   const [expense, setExpense] = React.useState<IExpense | undefined>(undefined);
   const navigation = useNavigation();
+
+
   const handleViewAllRecent = () => {
     // @ts-ignore
     navigation.navigate(EXPENSES_SCREEN);
   };
   const handleAddExpense = () => {
     setExpense(undefined);
-    toggleExpenseForm()
+    toggleExpenseForm();
   };
 
   const toggleExpenseForm = () => {
@@ -97,7 +105,13 @@ const Home: FC = () => {
   const handleExpressView = (expense: IExpense) => {
     setExpense(expense);
     toggleExpenseForm();
-  }
+  };
+  if (loading)
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={primaryBlueColor} />
+      </View>
+    );
   return (
     <>
       <View style={styles.container}>
@@ -133,7 +147,9 @@ const Home: FC = () => {
                 </View>
               </TouchableWithoutFeedback>
               <ScrollView>
-                <Text style={styles.addExpenseText}>{!expense ? "Add" : "Update"} Expense</Text>
+                <Text style={styles.addExpenseText}>
+                  {!expense ? 'Add' : 'Update'} Expense
+                </Text>
                 <ExpenseForm
                   submitHandler={handleAddExpensePress}
                   errorMessage={errorMessage}
@@ -149,6 +165,11 @@ const Home: FC = () => {
 };
 
 const styles = ScaledSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     position: 'relative',
@@ -211,8 +232,8 @@ const styles = ScaledSheet.create({
     backgroundColor: primaryWhite,
     width: '100%',
     padding: '10@ms',
-    borderTopRightRadius: getResponsiveSize(baseBorderRadiusLg+10, "ms"),
-    borderTopLeftRadius: getResponsiveSize(baseBorderRadiusLg+10, "ms")
+    borderTopRightRadius: getResponsiveSize(baseBorderRadiusLg + 10, 'ms'),
+    borderTopLeftRadius: getResponsiveSize(baseBorderRadiusLg + 10, 'ms'),
   },
 
   closeModal: {
