@@ -19,7 +19,7 @@ interface IProps {
 }
 const ChartControls: FC<IProps> = ({pressHanler}) => {
   const [controlItems] = useState<IControl[]>(controls);
-  const [active, setActive] = useState<IControl['label']>('Today');
+  const [active, setActive] = useState<IControl['label']>('This Year');
 
   const handlePress = (control: IControl) => {
     setActive(control.label);
@@ -90,15 +90,15 @@ const controls: IControl[] = [
     value: 'day',
   },
   {
-    label: 'This week',
+    label: 'This Week',
     value: 'week',
   },
   {
-    label: 'This month',
+    label: 'This Month',
     value: 'month',
   },
   {
-    label: 'This year',
+    label: 'This Year',
     value: 'year',
   },
 ];
