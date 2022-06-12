@@ -46,6 +46,12 @@ import {
 import {getResponsiveSize} from 'utills/responsiveSize';
 import ExpenseSummaryCard from './components/expenseSummaryCard/ExpenseSummaryCard';
 import ExpenseFilters from 'screens/expenses/components/expenseFilters/ExpenseFilters';
+import {
+  getWeekStartEndDate,
+  getMonthStartEndDate,
+  getYearStartEndDate,
+  getDayStartEndDate,
+} from 'utills/helper';
 
 interface page {
   results: any;
@@ -109,7 +115,6 @@ const Home: FC = () => {
     setRefreshing(false);
   };
 
-  
   const handleAddExpense = () => {
     setExpense(undefined);
     toggleExpenseForm();
@@ -140,6 +145,43 @@ const Home: FC = () => {
         //@ts-ignore
         navigation.navigate(CATEGORIES_SCREEN);
         break;
+        case 'Day':
+          {
+            const {startDateString, endDateString} = getDayStartEndDate();
+            setDate({
+              startDate: startDateString,
+              endDate: endDateString,
+            });
+          }
+          break;
+      case 'Week':
+        {
+          const {startDateString, endDateString} = getWeekStartEndDate();
+          setDate({
+            startDate: startDateString,
+            endDate: endDateString,
+          });
+        }
+        break;
+
+      case 'Month':
+        {
+          const {startDateString, endDateString} = getMonthStartEndDate();
+          setDate({
+            startDate: startDateString,
+            endDate: endDateString,
+          });
+        }
+        break;
+      case 'Year':
+        {
+          const {startDateString, endDateString} = getYearStartEndDate();
+          setDate({
+            startDate: startDateString,
+            endDate: endDateString,
+          });
+        }
+        break;
       default:
         return;
     }
@@ -152,6 +194,8 @@ const Home: FC = () => {
     }
     return [];
   };
+
+
   if (isLoading)
     return (
       <View style={styles.loaderContainer}>
@@ -168,11 +212,11 @@ const Home: FC = () => {
         <ExpenseSummaryCard amount={1000000} />
         <View style={styles.expenses}>
           <View style={styles.expenseSection}>
-          <TouchableWithoutFeedback onPress={handleAddExpense}>
-            <View style={styles.filterButton}>
-              <Text style={styles.filterButtonText}>Add Exense</Text>
-            </View>
-          </TouchableWithoutFeedback>
+            <TouchableWithoutFeedback onPress={handleAddExpense}>
+              <View style={styles.filterButton}>
+                <Text style={styles.filterButtonText}>Add Exense</Text>
+              </View>
+            </TouchableWithoutFeedback>
             <View style={styles.filter}>
               <TouchableWithoutFeedback onPress={toggleFilters}>
                 <View style={styles.filterButton}>
@@ -288,7 +332,7 @@ const styles = ScaledSheet.create({
   expenseSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: getResponsiveSize(baseMarginXl-20, 'ms'),
+    marginTop: getResponsiveSize(baseMarginXl - 20, 'ms'),
     marginBottom: getResponsiveSize(baseMargin, 'ms'),
   },
   sectionTitle: {
@@ -348,7 +392,7 @@ const styles = ScaledSheet.create({
     alignItems: 'center',
   },
   filterButtonText: {
-    fontSize: getResponsiveSize(baseFontSize+3, 'ms'),
+    fontSize: getResponsiveSize(baseFontSize + 3, 'ms'),
     marginLeft: getResponsiveSize(baseMarginSm, 'ms'),
     color: primaryBlueColor,
   },
