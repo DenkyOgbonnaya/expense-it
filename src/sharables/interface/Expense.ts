@@ -1,5 +1,5 @@
 export interface IExpense {
-  id?: number;
+  _id?: number;
   title: string;
   amount: number;
   date: string;
@@ -13,4 +13,9 @@ export interface IExpense {
 export interface IExpenseErrors {
   title?: string;
   amount?: string;
+}
+
+export interface IExpenseData {
+  _id: string,
+  expenses: IExpense []
 }

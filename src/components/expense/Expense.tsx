@@ -18,7 +18,7 @@ import {
   basePadding,
 } from 'styles/spacing';
 import {baseFontFamily} from 'styles/typography';
-import {dateFormatter} from 'utills/helper';
+import {dateFormatter, formatCurrency} from 'utills/helper';
 import {getResponsiveSize} from 'utills/responsiveSize';
 interface IProps {
   expense: IExpense;
@@ -37,7 +37,7 @@ const Expense: React.FC<IProps> = ({expense, pressHandler}) => {
         </View>
 
         <View style={styles.amountContainer}>
-          <Text style={styles.amountText}>N{expense.amount}</Text>
+          <Text style={styles.amountText}>N{formatCurrency(expense.amount)}</Text>
         </View>
       </View>
     </TouchableWithoutFeedback>

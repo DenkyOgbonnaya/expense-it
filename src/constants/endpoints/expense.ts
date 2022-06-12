@@ -1,0 +1,1 @@
+export const GET_EXPENSES_API = "/expenses/users/"

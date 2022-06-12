@@ -3,8 +3,10 @@ import {Plus} from 'assets';
 import {AppModal} from 'components';
 import ExpenseForm from 'components/expenseForm/ExpenseForm';
 import ExpenseList from 'components/expenseList/ExpenseList';
-import {EXPENSES_SCREEN} from 'navigations/constants';
+import {GET_EXPENSES_API} from 'constants/endpoints/expense';
+import {CATEGORIES_SCREEN, EXPENSES_SCREEN} from 'navigations/constants';
 import React, {FC, useState} from 'react';
+import {Filter} from 'assets';
 import {
   View,
   Text,
@@ -12,9 +14,13 @@ import {
   Keyboard,
   ScrollView,
   ActivityIndicator,
+  FlatList,
+  RefreshControl,
 } from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
-import {IExpense} from 'sharables/interface/Expense';
+import {useInfiniteQuery, useQuery} from 'react-query';
+import {handleGetRequest} from 'services/shared';
+import {IExpense, IExpenseData} from 'sharables/interface/Expense';
 import {
   backgroundColor,
   primaryBlueColor,
@@ -30,63 +36,80 @@ import {
   baseFontWeight,
   baseLineHeight,
   baseMargin,
+  baseMarginLg,
+  baseMarginSm,
   baseMarginXl,
   basePadding,
+  basePaddingLg,
   basePaddingXl,
 } from 'styles/spacing';
 import {getResponsiveSize} from 'utills/responsiveSize';
 import ExpenseSummaryCard from './components/expenseSummaryCard/ExpenseSummaryCard';
+import ExpenseFilters from 'screens/expenses/components/expenseFilters/ExpenseFilters';
 
-export const expenses: IExpense[] = [
-  {
-    id: 1,
-    title: 'Expense 1',
-    amount: 100,
-    date: '2020-01-01',
-    category: 1,
-    description: 'Expense 1 description',
-  },
-  {
-    id: 2,
-    title: 'Expense 1',
-    amount: 100,
-    date: '2020-01-01',
-    category: 1,
-    description: 'Expense 1 description',
-  },
-  {
-    id: 3,
-    title: 'Expense 1',
-    amount: 100,
-    date: '2020-01-01',
-    category: 1,
-    description: 'Expense 1 description',
-  },
-  {
-    id: 4,
-    title: 'Expense 1',
-    amount: 100,
-    date: '2020-01-01',
-    category: 1,
-    description: 'Expense 1 description',
-  },
-];
+interface page {
+  results: any;
+  totalPages: number;
+  nextPage: number | undefined;
+}
+interface IInfiniteData {
+  pages: page[];
+}
 const Home: FC = () => {
   const [showExpenseForm, setShowExpenseForm] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [date, setDate] = useState({
-    startDate: "", endDate: ""
-  })
+    startDate: '2022/01/01',
+    endDate: '2022/08/25',
+  });
+  const [showFilters, setShowFilters] = React.useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [expense, setExpense] = React.useState<IExpense | undefined>(undefined);
   const navigation = useNavigation();
+  const limit = 20;
 
-
-  const handleViewAllRecent = () => {
-    // @ts-ignore
-    navigation.navigate(EXPENSES_SCREEN);
+  const fetchRecords = async ({pageParam = 1}) => {
+    const response = await handleGetRequest(
+      `${GET_EXPENSES_API}${'user1'}?startDate=${date.startDate}&endDate=${
+        date.endDate
+      }`,
+    );
+    if (response.data) {
+      return {
+        results: response.data,
+        totalPages: Math.ceil(response.total_count / limit),
+        nextPage: pageParam + 1,
+      };
+    }
+    return {results: [], totalPages: 0, nextPage: 0};
   };
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    refetch,
+    fetchNextPage,
+  } = useInfiniteQuery([date.startDate, date.endDate], fetchRecords, {
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.nextPage < lastPage.totalPages) return lastPage.nextPage;
+      return undefined;
+    },
+  });
+  const handleEndReached = () => {
+    if (hasNextPage) {
+      fetchNextPage();
+    }
+  };
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  
   const handleAddExpense = () => {
     setExpense(undefined);
     toggleExpenseForm();
@@ -106,7 +129,30 @@ const Home: FC = () => {
     setExpense(expense);
     toggleExpenseForm();
   };
-  if (loading)
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+  const handleFilterPress = (filter: string) => {
+    toggleFilters();
+    switch (filter) {
+      case 'Category':
+        //@ts-ignore
+        navigation.navigate(CATEGORIES_SCREEN);
+        break;
+      default:
+        return;
+    }
+  };
+
+  const getExpensesData = (data: IInfiniteData | IInfiniteData | undefined) => {
+    if (data) {
+      const expenseData = data?.pages.map(page => page.results).flat();
+      return expenseData;
+    }
+    return [];
+  };
+  if (isLoading)
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color={primaryBlueColor} />
@@ -115,25 +161,57 @@ const Home: FC = () => {
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.titleText}>
+        {/* <Text style={styles.titleText}>
           Best way to{' '}
           <Text style={styles.titleTextBlue}>Track your expenses</Text>{' '}
-        </Text>
+        </Text> */}
         <ExpenseSummaryCard amount={1000000} />
         <View style={styles.expenses}>
           <View style={styles.expenseSection}>
-            <Text style={styles.sectionTitle}>Recent Expenses</Text>
-            <TouchableWithoutFeedback onPress={handleViewAllRecent}>
-              <Text style={styles.sectionTitleBlue}>View All</Text>
-            </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={handleAddExpense}>
+            <View style={styles.filterButton}>
+              <Text style={styles.filterButtonText}>Add Exense</Text>
+            </View>
+          </TouchableWithoutFeedback>
+            <View style={styles.filter}>
+              <TouchableWithoutFeedback onPress={toggleFilters}>
+                <View style={styles.filterButton}>
+                  <Filter height={20} width={20} />
+                  <Text style={styles.filterButtonText}>Filter</Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
           </View>
-          <ExpenseList expenses={expenses} pressHandler={handleExpressView} />
-          <View style={styles.plusBtnWrapper}>
-            <TouchableWithoutFeedback onPress={handleAddExpense}>
-              <View style={styles.plusBtn}>
-                <Plus height={30} width={30} />
-              </View>
-            </TouchableWithoutFeedback>
+          <View>
+            <FlatList
+              data={getExpensesData(data)}
+              renderItem={({item}) => (
+                <ExpenseList expense={item} pressHandler={handleExpressView} />
+              )}
+              keyExtractor={item => item.id}
+              contentContainerStyle={{flexGrow: 1}}
+              onEndReachedThreshold={5}
+              onEndReached={handleEndReached}
+              ListEmptyComponent={() => (
+                <View style={styles.footer}>
+                  <Text style={styles.noActiveText}>No Expenses </Text>
+                </View>
+              )}
+              ListFooterComponent={() => (
+                <View style={styles.footer}>
+                  {isFetchingNextPage && (
+                    <ActivityIndicator size="small" color={primaryWhite} />
+                  )}
+                </View>
+              )}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+            />
           </View>
         </View>
       </View>
@@ -160,6 +238,23 @@ const Home: FC = () => {
           </TouchableWithoutFeedback>
         </AppModal>
       )}
+      {showFilters && (
+        <AppModal visible={showFilters} closeModal={toggleFilters}>
+          <View style={styles.modalContainer}>
+            <View style={styles.heading}>
+              <Text style={styles.expenseFilterText}>
+                Expenses filter options
+              </Text>
+              <TouchableWithoutFeedback onPress={toggleFilters}>
+                <View style={styles.closeModal}>
+                  <Text style={styles.closeModalText}>X</Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+            <ExpenseFilters handleFilter={handleFilterPress} />
+          </View>
+        </AppModal>
+      )}
     </>
   );
 };
@@ -175,8 +270,8 @@ const styles = ScaledSheet.create({
     position: 'relative',
     backgroundColor: backgroundColor,
     paddingTop: getResponsiveSize(baseMargin, 'ms'),
-    margin: 0,
     paddingHorizontal: getResponsiveSize(basePadding, 'ms'),
+    paddingBottom: '240@vs',
   },
   titleText: {
     color: primaryDarkColor,
@@ -193,7 +288,7 @@ const styles = ScaledSheet.create({
   expenseSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: getResponsiveSize(baseMarginXl, 'ms'),
+    marginTop: getResponsiveSize(baseMarginXl-20, 'ms'),
     marginBottom: getResponsiveSize(baseMargin, 'ms'),
   },
   sectionTitle: {
@@ -205,28 +300,6 @@ const styles = ScaledSheet.create({
     color: primaryBlueColor,
     fontSize: getResponsiveSize(baseFontSizeLg, 'ms'),
     fontWeight: '600',
-  },
-  plusBtnWrapper: {
-    position: 'absolute',
-    bottom: getResponsiveSize(-80, 'ms'),
-    right: getResponsiveSize(0, 'ms'),
-    backgroundColor: primaryBlueColor,
-    borderRadius: getResponsiveSize(baseMargin, 'ms'),
-    padding: getResponsiveSize(basePadding, 'ms'),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  plusBtn: {
-    backgroundColor: primaryBlueColor,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: getResponsiveSize(basePaddingXl + 5, 'ms'),
   },
   modalContainer: {
     backgroundColor: primaryWhite,
@@ -249,6 +322,35 @@ const styles = ScaledSheet.create({
     fontSize: getResponsiveSize(baseFontSizeXl + 5, 'ms'),
     fontWeight: '600',
     marginBottom: getResponsiveSize(baseMargin, 'ms'),
+  },
+  footer: {},
+  noActiveText: {
+    alignSelf: 'center',
+  },
+  filter: {
+    marginTop: getResponsiveSize(baseMarginLg + 5, 'ms'),
+    alignSelf: 'flex-end',
+    paddingHorizontal: getResponsiveSize(basePaddingLg, 'ms'),
+  },
+  expenseFilterText: {
+    color: primaryDarkColor,
+    fontSize: getResponsiveSize(baseFontSize + 5, 'ms'),
+    fontWeight: '600',
+  },
+  heading: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: getResponsiveSize(baseMarginLg + 10, 'ms'),
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterButtonText: {
+    fontSize: getResponsiveSize(baseFontSize+3, 'ms'),
+    marginLeft: getResponsiveSize(baseMarginSm, 'ms'),
+    color: primaryBlueColor,
   },
 });
 export default Home;
