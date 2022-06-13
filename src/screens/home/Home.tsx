@@ -16,10 +16,12 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
 import {useInfiniteQuery, useMutation, useQuery} from 'react-query';
 import {
+  handleDeleteRequest,
   handleGetRequest,
   handlePostRequest,
   handlePutRequest,
@@ -30,6 +32,7 @@ import {
   primaryBlueColor,
   primaryDarkColor,
   primaryGrayLight,
+  primaryRed,
   primaryWhite,
 } from 'styles/colors';
 import {
@@ -49,7 +52,9 @@ import {
 } from 'styles/spacing';
 import {getResponsiveSize} from 'utills/responsiveSize';
 import ExpenseSummaryCard from './components/expenseSummaryCard/ExpenseSummaryCard';
-import ExpenseFilters, { IFilterOption } from 'screens/expenses/components/expenseFilters/ExpenseFilters';
+import ExpenseFilters, {
+  IFilterOption,
+} from 'screens/expenses/components/expenseFilters/ExpenseFilters';
 import {
   getWeekStartEndDate,
   getMonthStartEndDate,
@@ -69,13 +74,14 @@ interface page {
 interface IInfiniteData {
   pages: page[];
 }
+const today = new Date();
 const Home: FC = () => {
   const [showExpenseForm, setShowExpenseForm] = React.useState(false);
   const [showEditExpenseForm, setShowEditExpenseForm] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [date, setDate] = useState({
-    startDate: '2022/01/01',
-    endDate: '2022/08/25',
+    startDate: `${today.getFullYear()}/01/01`,
+    endDate: `${today.getFullYear()}/12/31`,
   });
   const [showFilters, setShowFilters] = React.useState(false);
   const [total, setTotal] = useState<number>();
@@ -123,15 +129,13 @@ const Home: FC = () => {
     ['total', date.startDate, date.endDate],
     async () => {
       return await handleGetRequest<IResponseBody<number>>(
-        `/expenses/users/user1/date-total?startDate=${date.startDate}&endDate=${
-          date.endDate
-        }`,
+        `/expenses/users/user1/date-total?startDate=${date.startDate}&endDate=${date.endDate}`,
       );
     },
     {
       onSuccess(data) {
         console.log(data, 'TOTAL');
-        setTotal(data.data)
+        setTotal(data.data);
       },
     },
   );
@@ -175,10 +179,38 @@ const Home: FC = () => {
         date: expense.date,
       };
 
-      console.log(expense, expenseId, 'JJccJSII');
       return await handlePutRequest<IResponseBody<IExpense>>(
         `/expenses/${expenseId}/users/user1`,
         theExpense,
+      );
+    },
+    {
+      onSuccess: (data: IResponseBody<IExpense>) => {
+        queryClient.invalidateQueries([
+          date.startDate,
+          date.endDate,
+          'expenses',
+        ]);
+        toast.message({
+          message: data.message,
+          duration: 4000,
+          type: 'SUCCESS_TOAST',
+        });
+        toggleEditExpenseForm();
+      },
+      onError(err: any) {
+        toast.message({
+          message: err.response.data.message.message,
+          duration: 4000,
+          type: 'ERROR_TOAST',
+        });
+      },
+    },
+  );
+  const {isLoading: deleteLoading, mutate: deleteMutate} = useMutation(
+    async (expense: IExpense) => {
+      return await handleDeleteRequest<IResponseBody<IExpense>>(
+        `/expenses/${expense._id}/users/user1`,
       );
     },
     {
@@ -232,12 +264,15 @@ const Home: FC = () => {
   const handleEditExpensePress = async (data: IExpense) => {
     editMutate(data);
   };
+  const handleDeleteExpensePress = async () => {
+    if(expense) deleteMutate(expense);
+  };
   const dissMissKeyboard = () => {
     Keyboard.dismiss();
   };
   const handleExpressView = (expense: IExpense) => {
     setExpense(expense);
-    toggleExpenseForm();
+    toggleEditExpenseForm();
   };
 
   const toggleFilters = () => {
@@ -245,7 +280,7 @@ const Home: FC = () => {
   };
   const handleFilterPress = (filter: IFilterOption) => {
     toggleFilters();
-    setExpenseRange(filter.label)
+    setExpenseRange(filter.label);
     switch (filter.value) {
       case 'Category':
         //@ts-ignore
@@ -292,7 +327,16 @@ const Home: FC = () => {
         return;
     }
   };
-
+  const handelDelete = () => {
+    Alert.alert("Delete Expense", "Sure to to delete this expense?", [
+      {
+        text: "Cancel",
+        onPress: toggleEditExpenseForm,
+        style: "cancel"
+      },
+      { text: "Delete", onPress: handleDeleteExpensePress }
+    ])
+  }
   const getExpensesData = (data: IInfiniteData | IInfiniteData | undefined) => {
     if (data) {
       const expenseData = data?.pages.map(page => page.results).flat();
@@ -391,11 +435,18 @@ const Home: FC = () => {
           closeModal={toggleEditExpenseForm}>
           <TouchableWithoutFeedback onPress={dissMissKeyboard}>
             <View style={styles.modalContainer}>
+              <View style={styles.header}>
+              <TouchableWithoutFeedback onPress={handelDelete}>
+                <View >
+                  <Text style={styles.deleteText}>Delete</Text>
+                </View>
+              </TouchableWithoutFeedback>
               <TouchableWithoutFeedback onPress={toggleEditExpenseForm}>
                 <View style={styles.closeModal}>
                   <Text style={styles.closeModalText}>Close</Text>
                 </View>
               </TouchableWithoutFeedback>
+              </View>
               <ScrollView>
                 <Text style={styles.addExpenseText}>Edit Expense</Text>
                 <ExpenseForm
@@ -425,12 +476,22 @@ const Home: FC = () => {
           </View>
         </AppModal>
       )}
-      {expenseLoading ||
-        (editLoading && (
+      {expenseLoading && (
           <Loader>
             <Text />
           </Loader>
-        ))}
+        )}
+        {
+        editLoading && (
+          <Loader>
+            <Text />
+          </Loader>
+        )}
+        {deleteLoading && (
+          <Loader>
+            <Text />
+          </Loader>
+        )}
     </>
   );
 };
@@ -527,6 +588,16 @@ const styles = ScaledSheet.create({
     fontSize: getResponsiveSize(baseFontSize + 3, 'ms'),
     marginLeft: getResponsiveSize(baseMarginSm, 'ms'),
     color: primaryBlueColor,
+  },
+  deleteText: {
+    color: primaryRed,
+    fontSize: '14@ms',
+    marginBottom: '10@ms',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: getResponsiveSize(basePadding, 'ms'),
   },
 });
 export default Home;

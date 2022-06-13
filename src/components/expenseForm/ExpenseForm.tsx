@@ -18,10 +18,16 @@ import {
   baseFontSizeLg,
   baseMargin,
   baseMarginLg,
+  basePadding,
   basePaddingXl,
 } from 'styles/spacing';
 import {PlusCircle} from 'assets';
-import {primaryBlueColor, primaryDarkColor, primaryWhite} from 'styles/colors';
+import {
+  primaryBlueColor,
+  primaryDarkColor,
+  primaryRed,
+  primaryWhite,
+} from 'styles/colors';
 import {AppModal} from 'components';
 import CategoryForm from 'components/categoryForm/CategoryForm';
 import {ICategory} from 'sharables/interface/Category';
@@ -42,7 +48,11 @@ interface IState {
   state: IExpense;
 }
 const today = new Date();
-const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
+const ExpenseForm: FC<IProps> = ({
+  expense,
+  submitHandler,
+  errorMessage,
+}) => {
   const [state, setState] = useState<IState['state']>(
     expense || {
       title: '',
@@ -96,11 +106,11 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
     setState({...state, [name]: value});
   };
   const handleSubmit = () => {
-    const errors = validateExpense(state)
+    const errors = validateExpense(state);
 
-    if(errors.title || errors.amount){
-      setErrors(errors)
-      return
+    if (errors.title || errors.amount) {
+      setErrors(errors);
+      return;
     }
     submitHandler(state);
   };
@@ -118,8 +128,7 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
 
     if (!data.title) errors.title = 'Enter a name for this expense';
     if (!data.amount) errors.amount = 'Enter amount spent';
-
-    return errors
+    return errors;
   };
   return (
     <View>
@@ -227,11 +236,13 @@ const styles = ScaledSheet.create({
     fontSize: '12@ms',
     marginBottom: '10@ms',
   },
+ 
   addCategoryText: {
     color: primaryDarkColor,
     fontSize: getResponsiveSize(baseFontSizeLg + 5, 'ms'),
     fontWeight: '600',
     marginBottom: getResponsiveSize(baseMargin + 20, 'ms'),
   },
+ 
 });
 export default ExpenseForm;

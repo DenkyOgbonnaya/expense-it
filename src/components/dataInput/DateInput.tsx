@@ -76,7 +76,7 @@ const DateInput: FC<IProps> = ({
         <View style={styles.rowView}>
           <View style={styles.wrapper}>
             {theDate ? (
-              <Text style={styles.date}>{theDate}</Text>
+              <Text style={styles.date}>{new Date(theDate).toDateString()}</Text>
             ) : (
               <Text style={styles.placeHolder}> {placeHolder} </Text>
             )}

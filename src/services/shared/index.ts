@@ -29,7 +29,7 @@ export const handlePutRequest = async <T>(path:string, payload:Object): Promise<
 };
 export const handleDeleteRequest = async <T>(payload:string):Promise<T> => {
   try {
-    const {data} = await API.delete(`${payload}`);
+    const {data} = await API.delete(payload);
     return data;
   } catch (err) {
     throw err;
