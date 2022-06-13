@@ -25,13 +25,14 @@ import {primaryBlueColor, primaryDarkColor, primaryWhite} from 'styles/colors';
 import {AppModal} from 'components';
 import CategoryForm from 'components/categoryForm/CategoryForm';
 import {ICategory} from 'sharables/interface/Category';
-import { MutateOptions, useMutation, useQuery } from 'react-query';
-import { handleGetRequest, handlePostRequest } from 'services/shared';
-import { CATEGORIES_API } from 'constants/endpoints/category';
-import { queryClient } from 'configs/reactQuery';
-import toast from 'utills/toast'
+import {useMutation, useQuery} from 'react-query';
+import {handleGetRequest, handlePostRequest} from 'services/shared';
+import {CATEGORIES_API} from 'constants/endpoints/category';
+import {queryClient} from 'configs/reactQuery';
+import toast from 'utills/toast';
 import Loader from 'components/loader/Loader';
-import { IResponseBody } from 'sharables/responseBody';
+import {IResponseBody} from 'sharables/responseBody';
+import {getDoubleValuDate} from 'utills/helper';
 interface IProps {
   expense: IExpense | undefined;
   submitHandler: (expense: IExpense) => void;
@@ -40,42 +41,67 @@ interface IProps {
 interface IState {
   state: IExpense;
 }
+const today = new Date();
 const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
   const [state, setState] = useState<IState['state']>(
     expense || {
       title: '',
       amount: 0,
-      date: '',
+      date: `${today.getFullYear()}-${getDoubleValuDate(
+        today.getMonth() + 1,
+      )}-${getDoubleValuDate(today.getDate())}`,
       category: 0,
     },
   );
   const [errors, setErrors] = useState<IExpenseErrors>({});
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
-  const {data:categories} = useQuery("categories", async () => {
-    const res = await handleGetRequest<IResponseBody<ICategory[]>>(`${CATEGORIES_API}user1`)
-    return res.data.map((category:ICategory) => ({label:category.name, value:category.name}))
-
-  })
-  const {isLoading:catLoading, mutate:catMutate} = useMutation(async (cred:ICategory) => {
-    return await handlePostRequest<IResponseBody<ICategory>>(`${CATEGORIES_API}user1`, cred)
-  },
-  {
-    onSuccess: (data:IResponseBody<ICategory>) => {
-      queryClient.invalidateQueries("categories")
-      toast.message({message: data.message, duration:4000, type:"SUCCESS_TOAST"})
-      toggleCategoryForm()
-    }, 
-    onError(err){
-      console.log(err)
-    }
-  }
-  )
+  const {data: categories} = useQuery('categories', async () => {
+    const res = await handleGetRequest<IResponseBody<ICategory[]>>(
+      `${CATEGORIES_API}user1`,
+    );
+    return res.data.map((category: ICategory) => ({
+      label: category.name,
+      value: category.name,
+    }));
+  });
+  const {isLoading: catLoading, mutate: catMutate} = useMutation(
+    async (cred: ICategory) => {
+      return await handlePostRequest<IResponseBody<ICategory>>(
+        `${CATEGORIES_API}user1`,
+        cred,
+      );
+    },
+    {
+      onSuccess: (data: IResponseBody<ICategory>) => {
+        queryClient.invalidateQueries('categories');
+        toast.message({
+          message: data.message,
+          duration: 4000,
+          type: 'SUCCESS_TOAST',
+        });
+        toggleCategoryForm();
+      },
+      onError(err: any) {
+        toast.message({
+          message: err.response.data.message.message,
+          duration: 4000,
+          type: 'SUCCESS_TOAST',
+        });
+      },
+    },
+  );
 
   const handleChange = (name: string, value: string | number) => {
     setState({...state, [name]: value});
   };
   const handleSubmit = () => {
+    const errors = validateExpense(state)
+
+    if(errors.title || errors.amount){
+      setErrors(errors)
+      return
+    }
     submitHandler(state);
   };
   const toggleCategoryForm = () => {
@@ -85,7 +111,15 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
     Keyboard.dismiss();
   };
   const handleSaveCategory = async (category: ICategory) => {
-    await catMutate(category)
+    await catMutate(category);
+  };
+  const validateExpense = (data: IExpense) => {
+    const errors: IExpenseErrors = {};
+
+    if (!data.title) errors.title = 'Enter a name for this expense';
+    if (!data.amount) errors.amount = 'Enter amount spent';
+
+    return errors
   };
   return (
     <View>
@@ -121,7 +155,7 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
         value={String(state.amount || '')}
         type="numeric"
         returnKeyType="next"
-        errorText={errors.title}
+        errorText={errors.amount}
       />
       <SelectField
         label="Category Name"
@@ -162,11 +196,11 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
           </TouchableWithoutFeedback>
         </AppModal>
       )}
-      {
-        catLoading && <Loader>
+      {catLoading && (
+        <Loader>
           <Text />
         </Loader>
-      }
+      )}
     </View>
   );
 };
@@ -197,7 +231,7 @@ const styles = ScaledSheet.create({
     color: primaryDarkColor,
     fontSize: getResponsiveSize(baseFontSizeLg + 5, 'ms'),
     fontWeight: '600',
-    marginBottom: getResponsiveSize(baseMargin+20, 'ms'),
+    marginBottom: getResponsiveSize(baseMargin + 20, 'ms'),
   },
 });
 export default ExpenseForm;

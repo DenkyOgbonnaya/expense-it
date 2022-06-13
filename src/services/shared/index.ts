@@ -19,8 +19,9 @@ export const handlePostRequest = async <T>(path:string, payload:Object):Promise<
   }
 };
 export const handlePutRequest = async <T>(path:string, payload:Object): Promise<T> => {
+  console.log(path, "PATH")
   try {
-    const {data} = await API.post(`${path}`, payload);
+    const {data} = await API.put(`${path}`, payload);
     return data;
   } catch (err) {
     throw err;

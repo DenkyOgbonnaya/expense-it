@@ -3,7 +3,7 @@ import {Plus} from 'assets';
 import {AppModal} from 'components';
 import ExpenseForm from 'components/expenseForm/ExpenseForm';
 import ExpenseList from 'components/expenseList/ExpenseList';
-import {GET_EXPENSES_API} from 'constants/endpoints/expense';
+import {EXPENSES_API} from 'constants/endpoints/expense';
 import {CATEGORIES_SCREEN, EXPENSES_SCREEN} from 'navigations/constants';
 import React, {FC, useState} from 'react';
 import {Filter} from 'assets';
@@ -18,8 +18,12 @@ import {
   RefreshControl,
 } from 'react-native';
 import {ScaledSheet} from 'react-native-size-matters';
-import {useInfiniteQuery, useQuery} from 'react-query';
-import {handleGetRequest} from 'services/shared';
+import {useInfiniteQuery, useMutation, useQuery} from 'react-query';
+import {
+  handleGetRequest,
+  handlePostRequest,
+  handlePutRequest,
+} from 'services/shared';
 import {IExpense, IExpenseData} from 'sharables/interface/Expense';
 import {
   backgroundColor,
@@ -52,6 +56,10 @@ import {
   getYearStartEndDate,
   getDayStartEndDate,
 } from 'utills/helper';
+import {IResponseBody} from 'sharables/responseBody';
+import {queryClient} from 'configs/reactQuery';
+import toast from 'utills/toast';
+import Loader from 'components/loader/Loader';
 
 interface page {
   results: any;
@@ -63,6 +71,7 @@ interface IInfiniteData {
 }
 const Home: FC = () => {
   const [showExpenseForm, setShowExpenseForm] = React.useState(false);
+  const [showEditExpenseForm, setShowEditExpenseForm] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [date, setDate] = useState({
     startDate: '2022/01/01',
@@ -76,8 +85,8 @@ const Home: FC = () => {
   const limit = 20;
 
   const fetchRecords = async ({pageParam = 1}) => {
-    const response = await handleGetRequest(
-      `${GET_EXPENSES_API}${'user1'}?startDate=${date.startDate}&endDate=${
+    const response = await handleGetRequest<IResponseBody<IExpenseData[]>>(
+      `${EXPENSES_API}${'user1'}?startDate=${date.startDate}&endDate=${
         date.endDate
       }`,
     );
@@ -98,12 +107,86 @@ const Home: FC = () => {
     hasNextPage,
     refetch,
     fetchNextPage,
-  } = useInfiniteQuery([date.startDate, date.endDate], fetchRecords, {
-    getNextPageParam: (lastPage, pages) => {
-      if (lastPage.nextPage < lastPage.totalPages) return lastPage.nextPage;
-      return undefined;
+  } = useInfiniteQuery(
+    [date.startDate, date.endDate, 'expenses'],
+    fetchRecords,
+    {
+      getNextPageParam: (lastPage, pages) => {
+        if (lastPage.nextPage < lastPage.totalPages) return lastPage.nextPage;
+        return undefined;
+      },
     },
-  });
+  );
+
+  const {isLoading: expenseLoading, mutate} = useMutation(
+    async (expense: IExpense) => {
+      return await handlePostRequest<IResponseBody<IExpense>>(
+        `${EXPENSES_API}user1`,
+        expense,
+      );
+    },
+    {
+      onSuccess: (data: IResponseBody<IExpense>) => {
+        queryClient.invalidateQueries([
+          date.startDate,
+          date.endDate,
+          'expenses',
+        ]);
+        toast.message({
+          message: data.message,
+          duration: 4000,
+          type: 'SUCCESS_TOAST',
+        });
+        toggleExpenseForm();
+      },
+      onError(err: any) {
+        toast.message({
+          message: err.response.data.message.message,
+          duration: 4000,
+          type: 'ERROR_TOAST',
+        });
+      },
+    },
+  );
+  const {isLoading: editLoading, mutate: editMutate} = useMutation(
+    async (expense: IExpense) => {
+      const expenseId = expense._id;
+      const theExpense: IExpense = {
+        title: expense.title,
+        amount: expense.amount,
+        category: expense.category,
+        date:expense.date,
+      }
+
+      console.log(expense, expenseId, "JJccJSII")
+      return await handlePutRequest<IResponseBody<IExpense>>(
+        `/expenses/${expenseId}/users/user1`,
+        theExpense,
+      );
+    },
+    {
+      onSuccess: (data: IResponseBody<IExpense>) => {
+        queryClient.invalidateQueries([
+          date.startDate,
+          date.endDate,
+          'expenses',
+        ]);
+        toast.message({
+          message: data.message,
+          duration: 4000,
+          type: 'SUCCESS_TOAST',
+        });
+        toggleEditExpenseForm();
+      },
+      onError(err: any) {
+        toast.message({
+          message: err.response.data.message.message,
+          duration: 4000,
+          type: 'ERROR_TOAST',
+        });
+      },
+    },
+  );
   const handleEndReached = () => {
     if (hasNextPage) {
       fetchNextPage();
@@ -123,9 +206,16 @@ const Home: FC = () => {
   const toggleExpenseForm = () => {
     setShowExpenseForm(!showExpenseForm);
   };
-
-  const handleAddExpensePress = () => {
-    toggleExpenseForm();
+  const toggleEditExpenseForm = () => {
+    setShowEditExpenseForm(!showEditExpenseForm);
+  };
+  const handleAddExpensePress = async (data: IExpense) => {
+   mutate(data)
+    
+  };
+  const handleEditExpensePress = async (data: IExpense) => {
+    editMutate(data)
+    
   };
   const dissMissKeyboard = () => {
     Keyboard.dismiss();
@@ -145,15 +235,15 @@ const Home: FC = () => {
         //@ts-ignore
         navigation.navigate(CATEGORIES_SCREEN);
         break;
-        case 'Day':
-          {
-            const {startDateString, endDateString} = getDayStartEndDate();
-            setDate({
-              startDate: startDateString,
-              endDate: endDateString,
-            });
-          }
-          break;
+      case 'Day':
+        {
+          const {startDateString, endDateString} = getDayStartEndDate();
+          setDate({
+            startDate: startDateString,
+            endDate: endDateString,
+          });
+        }
+        break;
       case 'Week':
         {
           const {startDateString, endDateString} = getWeekStartEndDate();
@@ -194,7 +284,6 @@ const Home: FC = () => {
     }
     return [];
   };
-
 
   if (isLoading)
     return (
@@ -270,10 +359,33 @@ const Home: FC = () => {
               </TouchableWithoutFeedback>
               <ScrollView>
                 <Text style={styles.addExpenseText}>
-                  {!expense ? 'Add' : 'Update'} Expense
+                  Add Expense
                 </Text>
                 <ExpenseForm
                   submitHandler={handleAddExpensePress}
+                  errorMessage={errorMessage}
+                  expense={expense}
+                />
+              </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
+        </AppModal>
+      )}
+       {showEditExpenseForm && (
+        <AppModal visible={showEditExpenseForm} closeModal={toggleEditExpenseForm}>
+          <TouchableWithoutFeedback onPress={dissMissKeyboard}>
+            <View style={styles.modalContainer}>
+              <TouchableWithoutFeedback onPress={toggleEditExpenseForm}>
+                <View style={styles.closeModal}>
+                  <Text style={styles.closeModalText}>Close</Text>
+                </View>
+              </TouchableWithoutFeedback>
+              <ScrollView>
+                <Text style={styles.addExpenseText}>
+                  Edit Expense
+                </Text>
+                <ExpenseForm
+                  submitHandler={handleEditExpensePress}
                   errorMessage={errorMessage}
                   expense={expense}
                 />
@@ -298,6 +410,11 @@ const Home: FC = () => {
             <ExpenseFilters handleFilter={handleFilterPress} />
           </View>
         </AppModal>
+      )}
+      {expenseLoading || editLoading && (
+        <Loader>
+          <Text />
+        </Loader>
       )}
     </>
   );
