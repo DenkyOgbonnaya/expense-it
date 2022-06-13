@@ -14,12 +14,14 @@ import { formatCurrency } from 'utills/helper';
 import {getResponsiveSize} from 'utills/responsiveSize';
 
 interface IProps {
-  amount: number;
+  amount: number | undefined;
+  label?:string
 }
-const ExpenseSummaryCard: FC<IProps> = ({amount}) => {
+const ExpenseSummaryCard: FC<IProps> = ({amount, label}) => {
   return (
     <View style={styles.container}>
       <View>
+        <Text style={styles.valueText}>{label}</Text>
         <Text style={styles.titleText}>Total Expense Summary</Text>
         <Text style={styles.valueText}>N{formatCurrency(amount)}</Text>
       </View>

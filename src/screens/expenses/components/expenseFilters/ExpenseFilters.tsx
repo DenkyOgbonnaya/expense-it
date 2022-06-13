@@ -5,8 +5,12 @@ import {primaryGray} from 'styles/colors';
 import {baseFontSize, baseMargin} from 'styles/spacing';
 import {getResponsiveSize} from 'utills/responsiveSize';
 
+export interface IFilterOption {
+  label: string,
+  value: string
+}
 interface IProps {
-  handleFilter: (filter: string) => void;
+  handleFilter: (filter: IFilterOption) => void;
 }
 const ExpenseFilters: FC<IProps> = ({handleFilter}) => {
   const filters = [
@@ -15,15 +19,15 @@ const ExpenseFilters: FC<IProps> = ({handleFilter}) => {
       value: 'Day',
     },
     {
-      label: 'This week',
+      label: 'This Week',
       value: 'Week',
     },
     {
-      label: 'This month',
+      label: 'This Wonth',
       value: 'Month',
     },
     {
-      label: 'This year',
+      label: 'This Year',
       value: 'Year',
     },
     {
@@ -32,7 +36,7 @@ const ExpenseFilters: FC<IProps> = ({handleFilter}) => {
     },
   ];
   const onFilterPress = (filter: any) => {
-    handleFilter(filter.value);
+    handleFilter(filter);
   };
   return (
     <View style={styles.container}>

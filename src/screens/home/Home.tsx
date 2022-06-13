@@ -49,7 +49,7 @@ import {
 } from 'styles/spacing';
 import {getResponsiveSize} from 'utills/responsiveSize';
 import ExpenseSummaryCard from './components/expenseSummaryCard/ExpenseSummaryCard';
-import ExpenseFilters from 'screens/expenses/components/expenseFilters/ExpenseFilters';
+import ExpenseFilters, { IFilterOption } from 'screens/expenses/components/expenseFilters/ExpenseFilters';
 import {
   getWeekStartEndDate,
   getMonthStartEndDate,
@@ -78,6 +78,8 @@ const Home: FC = () => {
     endDate: '2022/08/25',
   });
   const [showFilters, setShowFilters] = React.useState(false);
+  const [total, setTotal] = useState<number>();
+  const [expenseRange, setExpenseRange] = useState('This Year');
 
   const [refreshing, setRefreshing] = useState(false);
   const [expense, setExpense] = React.useState<IExpense | undefined>(undefined);
@@ -117,7 +119,22 @@ const Home: FC = () => {
       },
     },
   );
-
+  useQuery(
+    ['total', date.startDate, date.endDate],
+    async () => {
+      return await handleGetRequest<IResponseBody<number>>(
+        `/expenses/users/user1/date-total?startDate=${date.startDate}&endDate=${
+          date.endDate
+        }`,
+      );
+    },
+    {
+      onSuccess(data) {
+        console.log(data, 'TOTAL');
+        setTotal(data.data)
+      },
+    },
+  );
   const {isLoading: expenseLoading, mutate} = useMutation(
     async (expense: IExpense) => {
       return await handlePostRequest<IResponseBody<IExpense>>(
@@ -155,10 +172,10 @@ const Home: FC = () => {
         title: expense.title,
         amount: expense.amount,
         category: expense.category,
-        date:expense.date,
-      }
+        date: expense.date,
+      };
 
-      console.log(expense, expenseId, "JJccJSII")
+      console.log(expense, expenseId, 'JJccJSII');
       return await handlePutRequest<IResponseBody<IExpense>>(
         `/expenses/${expenseId}/users/user1`,
         theExpense,
@@ -210,12 +227,10 @@ const Home: FC = () => {
     setShowEditExpenseForm(!showEditExpenseForm);
   };
   const handleAddExpensePress = async (data: IExpense) => {
-   mutate(data)
-    
+    mutate(data);
   };
   const handleEditExpensePress = async (data: IExpense) => {
-    editMutate(data)
-    
+    editMutate(data);
   };
   const dissMissKeyboard = () => {
     Keyboard.dismiss();
@@ -228,9 +243,10 @@ const Home: FC = () => {
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
-  const handleFilterPress = (filter: string) => {
+  const handleFilterPress = (filter: IFilterOption) => {
     toggleFilters();
-    switch (filter) {
+    setExpenseRange(filter.label)
+    switch (filter.value) {
       case 'Category':
         //@ts-ignore
         navigation.navigate(CATEGORIES_SCREEN);
@@ -298,7 +314,7 @@ const Home: FC = () => {
           Best way to{' '}
           <Text style={styles.titleTextBlue}>Track your expenses</Text>{' '}
         </Text> */}
-        <ExpenseSummaryCard amount={1000000} />
+        <ExpenseSummaryCard amount={total} label={expenseRange} />
         <View style={styles.expenses}>
           <View style={styles.expenseSection}>
             <TouchableWithoutFeedback onPress={handleAddExpense}>
@@ -358,9 +374,7 @@ const Home: FC = () => {
                 </View>
               </TouchableWithoutFeedback>
               <ScrollView>
-                <Text style={styles.addExpenseText}>
-                  Add Expense
-                </Text>
+                <Text style={styles.addExpenseText}>Add Expense</Text>
                 <ExpenseForm
                   submitHandler={handleAddExpensePress}
                   errorMessage={errorMessage}
@@ -371,8 +385,10 @@ const Home: FC = () => {
           </TouchableWithoutFeedback>
         </AppModal>
       )}
-       {showEditExpenseForm && (
-        <AppModal visible={showEditExpenseForm} closeModal={toggleEditExpenseForm}>
+      {showEditExpenseForm && (
+        <AppModal
+          visible={showEditExpenseForm}
+          closeModal={toggleEditExpenseForm}>
           <TouchableWithoutFeedback onPress={dissMissKeyboard}>
             <View style={styles.modalContainer}>
               <TouchableWithoutFeedback onPress={toggleEditExpenseForm}>
@@ -381,9 +397,7 @@ const Home: FC = () => {
                 </View>
               </TouchableWithoutFeedback>
               <ScrollView>
-                <Text style={styles.addExpenseText}>
-                  Edit Expense
-                </Text>
+                <Text style={styles.addExpenseText}>Edit Expense</Text>
                 <ExpenseForm
                   submitHandler={handleEditExpensePress}
                   errorMessage={errorMessage}
@@ -411,11 +425,12 @@ const Home: FC = () => {
           </View>
         </AppModal>
       )}
-      {expenseLoading || editLoading && (
-        <Loader>
-          <Text />
-        </Loader>
-      )}
+      {expenseLoading ||
+        (editLoading && (
+          <Loader>
+            <Text />
+          </Loader>
+        ))}
     </>
   );
 };

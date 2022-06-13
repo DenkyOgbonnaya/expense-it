@@ -48,7 +48,7 @@ export const formatCurrency = (num = 0) => {
   
     const endDateString = `${startDate.getFullYear()}-${getDoubleValuDate(
       startDate.getMonth() + 1
-    )}-${getDoubleValuDate(startDate.getDate())}`;
+    )}-${getDoubleValuDate(startDate.getDate()+1)}`;
   
     return { startDateString, endDateString };
   };
