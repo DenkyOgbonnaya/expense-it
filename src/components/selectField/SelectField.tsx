@@ -39,7 +39,7 @@ interface IProps {
   changeHandler: (value: string | number) => void;
   errorText: string | undefined;
   customWrapperStyle?: any;
-  data: selectFieldData[];
+  data: selectFieldData[] | undefined;
   editable?: boolean;
   addFormToggler?: () => void;
 }
@@ -237,7 +237,7 @@ const styles = ScaledSheet.create({
     color: primaryGray,
     fontSize: '12@ms',
     marginLeft: 2,
-    marginBottom: 5,
+    marginBottom: '20@ms',
     fontWeight: '600',
     alignSelf: 'center',
     position: 'relative',

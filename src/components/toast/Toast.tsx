@@ -18,9 +18,9 @@ import {
 import {baseFontFamily} from 'styles/typography';
 import { Check } from 'assets';
 
-interface toasteHandlerParam {
+export interface toasteHandlerParam {
   duration: number;
-  type: string;
+  type: "SUCCESS_TOAST" | "ERROR_TOAST" | "INFO_TOAST";
   message: string;
 }
 const Toast = () => {

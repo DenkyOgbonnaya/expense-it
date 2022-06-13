@@ -12,11 +12,12 @@ interface IProps {
   category: ICategory | undefined;
   submitHandler: (category: ICategory) => void;
   errorMessage?: string;
+  loading: boolean
 }
 interface IState {
   state: ICategory;
 }
-const CategoryForm: FC<IProps> = ({category, submitHandler, errorMessage}) => {
+const CategoryForm: FC<IProps> = ({category, submitHandler, errorMessage, loading}) => {
   const [state, setState] = useState<IState['state']>(
     category || {
       name: '',
@@ -28,6 +29,12 @@ const CategoryForm: FC<IProps> = ({category, submitHandler, errorMessage}) => {
     setState({...state, [name]: value});
   };
   const handleSubmit = () => {
+    if(!errors.name){
+      setErrors({
+        name:"Enter category name"
+      })
+      return
+    }
     submitHandler(state);
   };
   return (
@@ -49,6 +56,7 @@ const CategoryForm: FC<IProps> = ({category, submitHandler, errorMessage}) => {
         onPressHandler={handleSubmit}
         customBtnStyle={styles.addBtn}
         icon={null}
+        disabled={loading}
       />
     </View>
   );

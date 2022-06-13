@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {Modal, View, StyleSheet} from 'react-native';
+import {Modal, View, StyleSheet, TouchableWithoutFeedback} from 'react-native';
 
 interface IProps {
   visible: boolean;
@@ -14,7 +14,10 @@ const AppModal: FC<IProps> = ({closeModal, visible, children}) => {
       transparent={true}
       visible={visible}
       onRequestClose={closeModal}>
-      <View style={[styles.container]}>{children}</View>
+        <TouchableWithoutFeedback onPress={closeModal}>
+        <View style={[styles.container]}>{children}</View>
+        </TouchableWithoutFeedback>
+  
     </Modal>
   );
 };

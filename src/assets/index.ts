@@ -7,6 +7,7 @@ import Filter from './svgs/filter.svg';
 import Check from './svgs/check.svg';
 import Edit from './svgs/edit.svg';
 import PlusBlue from './svgs/plusBlue.svg';
+import LoaderLottie from "./json/loader.json"
 
 export {
   Arrow,
@@ -18,4 +19,5 @@ export {
   Check,
   Edit,
   PlusBlue,
+  LoaderLottie
 };

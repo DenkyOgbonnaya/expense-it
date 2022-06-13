@@ -25,7 +25,13 @@ import {primaryBlueColor, primaryDarkColor, primaryWhite} from 'styles/colors';
 import {AppModal} from 'components';
 import CategoryForm from 'components/categoryForm/CategoryForm';
 import {ICategory} from 'sharables/interface/Category';
-
+import { MutateOptions, useMutation, useQuery } from 'react-query';
+import { handleGetRequest, handlePostRequest } from 'services/shared';
+import { CATEGORIES_API } from 'constants/endpoints/category';
+import { queryClient } from 'configs/reactQuery';
+import toast from 'utills/toast'
+import Loader from 'components/loader/Loader';
+import { IResponseBody } from 'sharables/responseBody';
 interface IProps {
   expense: IExpense | undefined;
   submitHandler: (expense: IExpense) => void;
@@ -46,6 +52,26 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
   const [errors, setErrors] = useState<IExpenseErrors>({});
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
+  const {data:categories} = useQuery("categories", async () => {
+    const res = await handleGetRequest<IResponseBody<ICategory[]>>(`${CATEGORIES_API}user1`)
+    return res.data.map((category:ICategory) => ({label:category.name, value:category.name}))
+
+  })
+  const {isLoading:catLoading, mutate:catMutate} = useMutation(async (cred:ICategory) => {
+    return await handlePostRequest<IResponseBody<ICategory>>(`${CATEGORIES_API}user1`, cred)
+  },
+  {
+    onSuccess: (data:IResponseBody<ICategory>) => {
+      queryClient.invalidateQueries("categories")
+      toast.message({message: data.message, duration:4000, type:"SUCCESS_TOAST"})
+      toggleCategoryForm()
+    }, 
+    onError(err){
+      console.log(err)
+    }
+  }
+  )
+
   const handleChange = (name: string, value: string | number) => {
     setState({...state, [name]: value});
   };
@@ -58,7 +84,9 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
   const dissMissKeyboard = () => {
     Keyboard.dismiss();
   };
-  const handleSaveCategory = (category: ICategory) => {};
+  const handleSaveCategory = async (category: ICategory) => {
+    await catMutate(category)
+  };
   return (
     <View>
       <InputField
@@ -101,13 +129,7 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
         changeHandler={value => {
           handleChange('category', value);
         }}
-        data={[
-          {label: 'Food', value: 1},
-          {label: 'Transport', value: 2},
-          {label: 'Entertainment', value: 3},
-          {label: 'Shopping', value: 4},
-          {label: 'Others', value: 5},
-        ]}
+        data={categories}
         value={String(state.category || '')}
         errorText={errors.title}
         addFormToggler={toggleCategoryForm}
@@ -133,12 +155,18 @@ const ExpenseForm: FC<IProps> = ({expense, submitHandler, errorMessage}) => {
                   submitHandler={handleSaveCategory}
                   errorMessage={''}
                   category={undefined}
+                  loading={catLoading}
                 />
               </>
             </View>
           </TouchableWithoutFeedback>
         </AppModal>
       )}
+      {
+        catLoading && <Loader>
+          <Text />
+        </Loader>
+      }
     </View>
   );
 };

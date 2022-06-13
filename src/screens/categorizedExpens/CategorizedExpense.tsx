@@ -27,11 +27,15 @@ import {
 import {useQuery} from 'react-query';
 import {handleGetRequest} from 'services/shared';
 import {GET_CATEGORIZED_EXPENSE_API} from 'constants/endpoints/expense';
-import { ICategory } from 'sharables/interface/Category';
+import { IResponseBody } from 'sharables/responseBody';
 
 interface category {
-  _id:string,
-  total: number
+  _id: string;
+    total: number;
+    color: string;
+    legendFontColor: string;
+    legendFontSize: number;
+    name: string;
 }
 
 const CategoryExpense: FC = () => {
@@ -46,7 +50,7 @@ const CategoryExpense: FC = () => {
   const {isLoading, data} = useQuery(
     [date.startDate, date.endDate, 'categories'],
     async () => {
-      return await handleGetRequest(
+      return await handleGetRequest<IResponseBody<category[]>>(
         `${GET_CATEGORIZED_EXPENSE_API}${'user1'}/categories?startDate=${
           date.startDate
         }&endDate=${date.endDate}`,
